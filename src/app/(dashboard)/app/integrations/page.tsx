@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle, Plug, RefreshCw, Unlink } from 'lucide-react'
+import { CheckCircle, Plug, RefreshCw, Unlink, FlaskConical } from 'lucide-react'
 
 interface GoogleStatus {
   connected: boolean
@@ -30,6 +30,7 @@ export default function IntegrationsPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [syncing, setSyncing] = useState(false)
+  const [creatingTest, setCreatingTest] = useState(false)
 
   useEffect(() => {
     const connected = searchParams.get('connected')
@@ -58,6 +59,21 @@ export default function IntegrationsPage() {
       queryClient.invalidateQueries({ queryKey: ['google-ads-status'] })
     },
   })
+
+  async function handleCreateTestAccount() {
+    setCreatingTest(true)
+    try {
+      const res = await fetch('/api/connect/google-ads/create-test-account', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      toast.success(`Conta de teste criada! ID: ${data.customerId}`)
+      queryClient.invalidateQueries({ queryKey: ['google-ads-status'] })
+    } catch (err) {
+      toast.error(`Erro: ${String(err)}`)
+    } finally {
+      setCreatingTest(false)
+    }
+  }
 
   async function handleSync() {
     setSyncing(true)
@@ -126,26 +142,41 @@ export default function IntegrationsPage() {
                     Última sync: {new Date(status.lastSync).toLocaleString('pt-BR')}
                   </p>
                 )}
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="flex-1 gap-1.5"
-                    onClick={handleSync}
-                    disabled={syncing}
-                  >
-                    <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
-                    {syncing ? 'Sincronizando…' : 'Sincronizar'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5"
-                    onClick={() => disconnectMutation.mutate()}
-                    disabled={disconnectMutation.isPending}
-                  >
-                    <Unlink className="h-3.5 w-3.5" />
-                    Desconectar
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1 gap-1.5"
+                      onClick={handleSync}
+                      disabled={syncing}
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                      {syncing ? 'Sincronizando…' : 'Sincronizar'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => disconnectMutation.mutate()}
+                      disabled={disconnectMutation.isPending}
+                    >
+                      <Unlink className="h-3.5 w-3.5" />
+                      Desconectar
+                    </Button>
+                  </div>
+                  {/* Token em modo teste — cria conta de teste via API */}
+                  {(!status?.customerId || status.customerId === '') && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full gap-1.5"
+                      onClick={handleCreateTestAccount}
+                      disabled={creatingTest}
+                    >
+                      <FlaskConical className={`h-3.5 w-3.5 ${creatingTest ? 'animate-spin' : ''}`} />
+                      {creatingTest ? 'Criando conta de teste…' : 'Criar conta de teste (token teste)'}
+                    </Button>
+                  )}
                 </div>
               </>
             ) : (
