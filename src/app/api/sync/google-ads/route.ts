@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { getValidToken } from '@/lib/google-ads-oauth'
-import { getCampaignMetrics } from '@/lib/google-ads-client'
+import { getCampaignMetrics, listAccessibleCustomers } from '@/lib/google-ads-client'
 import { detectAnomalies, saveAlertsToDb } from '@/lib/alert-detection'
 
 function dateStr(date: Date): string {
@@ -21,9 +21,23 @@ export async function POST() {
 
   const userId = session.user.id
 
-  const cred = await prisma.googleAdsCredential.findUnique({ where: { userId } })
+  let cred = await prisma.googleAdsCredential.findUnique({ where: { userId } })
   if (!cred) return NextResponse.json({ error: 'Google Ads not connected' }, { status: 400 })
-  if (!cred.customerId) return NextResponse.json({ error: 'No Google Ads account selected' }, { status: 400 })
+
+  // Se customerId não foi salvo no OAuth, tenta descobrir agora
+  if (!cred.customerId) {
+    try {
+      const accessToken = await getValidToken(userId)
+      const customers = await listAccessibleCustomers(accessToken)
+      if (!customers.length) return NextResponse.json({ error: 'Nenhuma conta Google Ads encontrada para este usuário.' }, { status: 400 })
+      cred = await prisma.googleAdsCredential.update({
+        where: { userId },
+        data: { customerId: customers[0] },
+      })
+    } catch (err) {
+      return NextResponse.json({ error: `Não foi possível encontrar sua conta Google Ads: ${String(err)}` }, { status: 400 })
+    }
+  }
 
   if (!process.env.GOOGLE_ADS_DEVELOPER_TOKEN) {
     return NextResponse.json({ error: 'GOOGLE_ADS_DEVELOPER_TOKEN not configured' }, { status: 500 })
