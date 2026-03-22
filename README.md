@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Akron
 
-## Getting Started
+Plataforma de gestão de campanhas multi-canal com detecção automática de problemas, sugestões de otimização com impacto projetado e log auditável de ações.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) + TypeScript strict
+- **Tailwind CSS 4** + Design System com tokens semânticos
+- **Prisma 6** + PostgreSQL (Neon)
+- **Auth.js v5** (Google OAuth + Resend Magic Link)
+- **Stripe** (assinaturas + Customer Portal)
+- **TanStack Query** (data fetching)
+- **Sonner** (toasts)
+- **Zod** (validação)
+
+## Setup Local
+
+### 1. Clone e instale dependências
+
+```bash
+git clone https://github.com/leolynz/akron
+cd akron
+npm install
+```
+
+### 2. Configure variáveis de ambiente
+
+```bash
+cp .env.example .env.local
+```
+
+Preencha todas as variáveis:
+
+| Variável | Onde obter |
+|---|---|
+| `DATABASE_URL` | [neon.tech](https://neon.tech) — free tier |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Google Cloud Console → OAuth 2.0 |
+| `RESEND_API_KEY` | [resend.com](https://resend.com) |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Stripe Dashboard |
+| `STRIPE_PRO_PRICE_ID` | Criar produto "Akron PRO" R$97/mês no Stripe |
+
+### 3. Configure o banco
+
+```bash
+# Para .env.local, copie para .env antes do migrate
+cp .env.local .env
+npx prisma migrate dev
+```
+
+### 4. Rode localmente
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Stripe Webhook local (opcional)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
 
-## Learn More
+## Design System
 
-To learn more about Next.js, take a look at the following resources:
+Tokens centralizados em `design-system/tokens.ts`. Para regenerar CSS:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run tokens
+npm run tokens:check
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy (Vercel)
 
-## Deploy on Vercel
+1. Conecte o repo no Vercel
+2. Configure as variáveis de ambiente no painel
+3. Deploy automático em cada push para `main`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Estrutura
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── (auth)/login/
+│   ├── (dashboard)/
+│   │   ├── dashboard/
+│   │   ├── app/alerts/        # Feed Sentinela
+│   │   ├── app/clusters/
+│   │   ├── app/clients/
+│   │   ├── app/logs/          # Log auditável
+│   │   └── settings/billing/
+│   ├── api/alerts, actions, clusters, clients, execution-logs, stripe/
+│   ├── pricing/
+│   └── page.tsx               # Landing page
+├── components/ui/             # Button, Card, Badge, Input
+├── components/shared/         # Sidebar, TrialBanner, PaywallGate
+├── lib/
+│   ├── subscription.ts        # isTrialActive, hasAccess, daysLeftInTrial
+│   ├── plan-limits.ts         # PLAN_LIMITS, checkUsageLimit
+│   └── stripe.ts              # Lazy client, checkout, portal
+├── auth.ts                    # Auth.js v5
+└── middleware.ts              # Proteção de rotas leve (sem importar Auth.js)
+design-system/
+├── tokens.ts                  # Single Source of Truth
+├── utils.ts
+└── generate-css.ts
+```
