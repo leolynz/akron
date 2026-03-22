@@ -78,33 +78,33 @@ export interface DesignTokens {
 
 export const tokens: DesignTokens = {
   colors: {
-    // Primary — indigo/violeta do logo
-    primary: '#6366F1',
+    // Primary — azul royal (referência dashboard)
+    primary: '#2563EB',
     primaryForeground: '#FFFFFF',
-    primaryHover: '#4F46E5',
-    // Accent — indigo claro
-    accent: '#818CF8',
+    primaryHover: '#1D4ED8',
+    // Accent — verde sucesso/positivo
+    accent: '#22C55E',
     accentForeground: '#FFFFFF',
-    accentHover: '#6366F1',
-    // Backgrounds — dark navy
-    background: '#080C1A',
+    accentHover: '#16A34A',
+    // Backgrounds — dark navy profundo
+    background: '#0A0D1A',
     foreground: '#F1F5F9',
-    card: '#0F1629',
+    card: '#111827',
     cardForeground: '#F1F5F9',
-    popover: '#0F1629',
+    popover: '#111827',
     popoverForeground: '#F1F5F9',
     // Neutral
-    muted: '#1A2035',
+    muted: '#1E293B',
     mutedForeground: '#94A3B8',
-    border: '#1E2745',
-    input: '#1E2745',
-    ring: '#6366F1',
+    border: '#1E293B',
+    input: '#1E293B',
+    ring: '#2563EB',
     // Semantic
     destructive: '#EF4444',
     destructiveForeground: '#FFFFFF',
     warning: '#F59E0B',
     warningForeground: '#FFFFFF',
-    success: '#10B981',
+    success: '#22C55E',
     successForeground: '#FFFFFF',
     // Alert severity
     severityHigh: '#EF4444',
@@ -112,12 +112,12 @@ export const tokens: DesignTokens = {
     severityLow: '#94A3B8',
   },
   sidebar: {
-    background: '#050810',
+    background: '#080B17',
     foreground: '#E2E8F0',
-    border: '#1E2745',
-    accent: '#6366F1',
+    border: '#1A2235',
+    accent: '#2563EB',
     accentForeground: '#FFFFFF',
-    width: '16rem',
+    width: '15rem',
   },
   radius: {
     sm: '0.25rem',

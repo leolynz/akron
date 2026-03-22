@@ -2,23 +2,82 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bell, GitBranch, Users, ScrollText, LayoutDashboard, Settings, Zap } from 'lucide-react'
+import {
+  LayoutDashboard, Bell, Plug, GitBranch, Users, ScrollText,
+  Settings, LogOut, Zap, TrendingUp, Target, Star, Eye,
+  BarChart3, FileText, Palette, FolderOpen, ShoppingBag
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/app/alerts', label: 'Feed Sentinela', icon: Bell },
-  { href: '/app/clusters', label: 'Clusters', icon: GitBranch },
-  { href: '/app/clients', label: 'Clientes', icon: Users },
-  { href: '/app/logs', label: 'Log de Execução', icon: ScrollText },
+interface NavItem {
+  href: string
+  label: string
+  icon: React.ElementType
+}
+
+interface NavGroup {
+  label?: string
+  items: NavItem[]
+}
+
+const navGroups: NavGroup[] = [
+  {
+    items: [
+      { href: '/dashboard', label: 'Visão Geral', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'Performance',
+    items: [
+      { href: '/app/alerts', label: 'Feed Sentinela', icon: Bell },
+      { href: '/app/integrations', label: 'Integrações', icon: Plug },
+      { href: '/app/clusters', label: 'Clusters', icon: Target },
+      { href: '/app/logs', label: 'Log de Execução', icon: ScrollText },
+    ],
+  },
+  {
+    label: 'Gestão',
+    items: [
+      { href: '/app/clients', label: 'Clientes', icon: Users },
+    ],
+  },
 ]
 
-export function Sidebar() {
+const bottomItems: NavItem[] = [
+  { href: '/settings/billing', label: 'Configurações', icon: Settings },
+]
+
+function NavLink({ href, label, icon: Icon }: NavItem) {
   const pathname = usePathname()
+  const active = pathname === href || pathname.startsWith(href + '/')
 
   return (
+    <Link
+      href={href}
+      className={cn(
+        'relative flex items-center gap-2.5 rounded-[var(--radius-md)] px-3 py-2 text-[length:var(--typography-size-sm)] transition-all',
+        active
+          ? 'font-[var(--typography-weight-medium)]'
+          : 'opacity-60 hover:opacity-90 hover:bg-white/5'
+      )}
+      style={active ? { color: '#FFFFFF', background: 'rgba(37,99,235,0.15)' } : { color: 'var(--sidebar-foreground)' }}
+    >
+      {active && (
+        <span
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r"
+          style={{ background: 'var(--sidebar-accent)' }}
+        />
+      )}
+      <Icon className="h-4 w-4 shrink-0" style={active ? { color: 'var(--sidebar-accent)' } : {}} />
+      {label}
+    </Link>
+  )
+}
+
+export function Sidebar() {
+  return (
     <aside
-      className="flex flex-col h-screen border-r"
+      className="flex flex-col h-screen border-r shrink-0"
       style={{
         width: 'var(--sidebar-width)',
         background: 'var(--sidebar-background)',
@@ -27,54 +86,39 @@ export function Sidebar() {
       }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2 px-6 py-5 border-b" style={{ borderColor: 'var(--sidebar-border)' }}>
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: 'var(--sidebar-border)' }}>
         <div
           className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)]"
-          style={{ background: 'var(--color-primary)' }}
+          style={{ background: 'var(--sidebar-accent)' }}
         >
-          <Zap className="h-4 w-4" style={{ color: 'var(--color-primary-foreground)' }} />
+          <Zap className="h-4 w-4 text-white" />
         </div>
-        <span className="text-[length:var(--typography-size-lg)] font-[var(--typography-weight-bold)]">
+        <span className="text-[length:var(--typography-size-base)] font-[var(--typography-weight-bold)] text-white">
           Akron
         </span>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2 text-[length:var(--typography-size-sm)] transition-colors',
-                active
-                  ? 'font-[var(--typography-weight-medium)]'
-                  : 'opacity-70 hover:opacity-100'
-              )}
-              style={
-                active
-                  ? { background: 'var(--sidebar-accent)', color: 'var(--sidebar-accent-foreground)' }
-                  : {}
-              }
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {label}
-            </Link>
-          )
-        })}
+      {/* Nav groups */}
+      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-5">
+        {navGroups.map((group, i) => (
+          <div key={i} className="space-y-0.5">
+            {group.label && (
+              <p className="px-3 pb-1 text-[10px] font-[var(--typography-weight-semibold)] uppercase tracking-wider opacity-40">
+                {group.label}
+              </p>
+            )}
+            {group.items.map((item) => (
+              <NavLink key={item.href} {...item} />
+            ))}
+          </div>
+        ))}
       </nav>
 
-      {/* Settings */}
-      <div className="px-3 py-4 border-t" style={{ borderColor: 'var(--sidebar-border)' }}>
-        <Link
-          href="/settings/billing"
-          className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2 text-[length:var(--typography-size-sm)] opacity-70 hover:opacity-100 transition-colors"
-        >
-          <Settings className="h-4 w-4 shrink-0" />
-          Configurações
-        </Link>
+      {/* Bottom */}
+      <div className="px-3 py-3 border-t space-y-0.5" style={{ borderColor: 'var(--sidebar-border)' }}>
+        {bottomItems.map((item) => (
+          <NavLink key={item.href} {...item} />
+        ))}
       </div>
     </aside>
   )
