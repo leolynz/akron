@@ -31,6 +31,7 @@ export default function IntegrationsPage() {
   const queryClient = useQueryClient()
   const [syncing, setSyncing] = useState(false)
   const [creatingTest, setCreatingTest] = useState(false)
+  const [mccId, setMccId] = useState('')
 
   useEffect(() => {
     const connected = searchParams.get('connected')
@@ -63,7 +64,11 @@ export default function IntegrationsPage() {
   async function handleCreateTestAccount() {
     setCreatingTest(true)
     try {
-      const res = await fetch('/api/connect/google-ads/create-test-account', { method: 'POST' })
+      const res = await fetch('/api/connect/google-ads/create-test-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mccId: mccId || undefined }),
+      })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       toast.success(`Conta de teste criada! ID: ${data.customerId}`)
@@ -165,7 +170,18 @@ export default function IntegrationsPage() {
                     </Button>
                   </div>
                   {/* Token em modo teste — cria conta de teste via API */}
-                  {(!status?.customerId || status.customerId === '') && (
+                  <div className="space-y-1.5 pt-1 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                    <p className="text-[10px]" style={{ color: 'var(--color-muted-foreground)' }}>
+                      Token em modo teste — crie uma conta de teste:
+                    </p>
+                    <input
+                      type="text"
+                      placeholder="ID da MCC (ex: 123-456-7890)"
+                      value={mccId}
+                      onChange={e => setMccId(e.target.value)}
+                      className="w-full rounded-[var(--radius-md)] border px-2.5 py-1.5 text-xs text-white outline-none focus:border-[var(--color-primary)]"
+                      style={{ background: 'var(--color-muted)', borderColor: 'var(--color-border)' }}
+                    />
                     <Button
                       size="sm"
                       variant="outline"
@@ -174,9 +190,9 @@ export default function IntegrationsPage() {
                       disabled={creatingTest}
                     >
                       <FlaskConical className={`h-3.5 w-3.5 ${creatingTest ? 'animate-spin' : ''}`} />
-                      {creatingTest ? 'Criando conta de teste…' : 'Criar conta de teste (token teste)'}
+                      {creatingTest ? 'Criando…' : 'Criar conta de teste'}
                     </Button>
-                  )}
+                  </div>
                 </div>
               </>
             ) : (

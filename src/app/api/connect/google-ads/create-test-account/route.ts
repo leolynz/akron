@@ -8,7 +8,7 @@ const API_VERSION = 'v19'
 const BASE_URL = `https://googleads.googleapis.com/${API_VERSION}`
 const DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN ?? ''
 
-export async function POST() {
+export async function POST(req: Request) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -16,17 +16,26 @@ export async function POST() {
   const cred = await prisma.googleAdsCredential.findUnique({ where: { userId } })
   if (!cred) return NextResponse.json({ error: 'Google Ads not connected' }, { status: 400 })
 
+  // Aceita mccId manual ou tenta descobrir via API
+  const body = await req.json().catch(() => ({}))
+  const mccIdRaw: string | undefined = body.mccId
+
   try {
     const accessToken = await getValidToken(userId)
 
-    // 1. Descobre o MCC customer ID
-    const customers = await listAccessibleCustomers(accessToken)
-    if (!customers.length) {
-      return NextResponse.json({ error: 'Nenhuma conta MCC encontrada.' }, { status: 400 })
-    }
+    let mccId: string
 
-    // Pega o ID limpo (sem "customers/")
-    const mccId = customers[0].replace('customers/', '').replace(/-/g, '')
+    if (mccIdRaw) {
+      // ID fornecido manualmente — limpa formatação
+      mccId = mccIdRaw.replace(/-/g, '').trim()
+    } else {
+      // Tenta descobrir via API
+      const customers = await listAccessibleCustomers(accessToken)
+      if (!customers.length) {
+        return NextResponse.json({ error: 'Nenhuma conta MCC encontrada. Forneça o ID manualmente.' }, { status: 400 })
+      }
+      mccId = customers[0].replace('customers/', '').replace(/-/g, '')
+    }
 
     // 2. Cria a conta de teste dentro do MCC
     const res = await fetch(`${BASE_URL}/customers/${mccId}:createCustomerClient`, {
