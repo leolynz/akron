@@ -3,9 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Bell, Plug, GitBranch, Users, ScrollText,
-  Settings, LogOut, Zap, TrendingUp, Target, Star, Eye,
-  BarChart3, FileText, Palette, FolderOpen, ShoppingBag
+  LayoutDashboard, Bell, Plug, Users, ScrollText,
+  Settings, Zap, Target, Lightbulb
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -29,9 +28,9 @@ const navGroups: NavGroup[] = [
   {
     label: 'Performance',
     items: [
-      { href: '/app/alerts', label: 'Feed Sentinela', icon: Bell },
-      { href: '/app/integrations', label: 'Integrações', icon: Plug },
-      { href: '/app/clusters', label: 'Clusters', icon: Target },
+      { href: '/app/alerts', label: 'Insights', icon: Bell },
+      { href: '/app/otimizacoes', label: 'Otimizações', icon: Lightbulb },
+      { href: '/app/clusters', label: 'Grupos (Clusters)', icon: Target },
       { href: '/app/logs', label: 'Log de Execução', icon: ScrollText },
     ],
   },
@@ -39,6 +38,7 @@ const navGroups: NavGroup[] = [
     label: 'Gestão',
     items: [
       { href: '/app/clients', label: 'Clientes', icon: Users },
+      { href: '/app/integrations', label: 'Integrações', icon: Plug },
     ],
   },
 ]
