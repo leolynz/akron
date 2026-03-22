@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle, AlertTriangle, Plug, RefreshCw, Unlink, ExternalLink } from 'lucide-react'
+import { CheckCircle, Plug, RefreshCw, Unlink } from 'lucide-react'
 
 interface GoogleStatus {
   connected: boolean
@@ -86,31 +86,6 @@ export default function IntegrationsPage() {
           Conecte suas plataformas de tráfego para sincronizar métricas e detectar alertas automaticamente.
         </p>
       </div>
-
-      {/* Aviso Developer Token */}
-      <Card className="border-[var(--color-warning)]" style={{ borderColor: 'var(--color-warning)' }}>
-        <CardContent className="flex items-start gap-3 pt-4">
-          <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: 'var(--color-warning)' }} />
-          <div>
-            <p className="text-[length:var(--typography-size-sm)] font-[var(--typography-weight-medium)]">
-              Pré-requisito: Google Ads Developer Token
-            </p>
-            <p className="mt-1 text-[length:var(--typography-size-xs)] text-[var(--color-muted-foreground)]">
-              Além do OAuth, a API do Google Ads exige um Developer Token. Acesse{' '}
-              <a
-                href="https://ads.google.com/aw/apicenter"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline inline-flex items-center gap-1"
-                style={{ color: 'var(--color-primary)' }}
-              >
-                ads.google.com/aw/apicenter <ExternalLink className="h-3 w-3" />
-              </a>{' '}
-              e adicione <code className="px-1 rounded text-xs" style={{ background: 'var(--color-muted)' }}>GOOGLE_ADS_DEVELOPER_TOKEN=xxx</code> no seu <code className="px-1 rounded text-xs" style={{ background: 'var(--color-muted)' }}>.env.local</code>.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Grid de integrações */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
