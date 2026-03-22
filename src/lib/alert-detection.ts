@@ -123,7 +123,8 @@ export function detectAnomalies(
 export async function saveAlertsToDb(
   userId: string,
   workspaceId: string,
-  detectedAlerts: DetectedAlert[]
+  detectedAlerts: DetectedAlert[],
+  canal: 'GOOGLE' | 'META' | 'TIKTOK' | 'LINKEDIN' = 'GOOGLE'
 ): Promise<number> {
   let created = 0
   for (const alert of detectedAlerts) {
@@ -134,7 +135,7 @@ export async function saveAlertsToDb(
         campanhaId: alert.campanhaId,
         tipo: alert.tipo,
         status: 'NOVO',
-        canal: 'GOOGLE',
+        canal,
       },
     })
     if (existing) continue
@@ -142,7 +143,7 @@ export async function saveAlertsToDb(
     await prisma.alert.create({
       data: {
         workspaceId,
-        canal: 'GOOGLE',
+        canal,
         campanhaId: alert.campanhaId,
         tipo: alert.tipo,
         diagnostico: alert.diagnostico,

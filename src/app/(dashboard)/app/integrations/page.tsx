@@ -15,6 +15,12 @@ interface GoogleStatus {
   lastSync?: string
 }
 
+interface MetaStatus {
+  connected: boolean
+  adAccountId?: string
+  lastSync?: string
+}
+
 function GoogleAdsIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -25,11 +31,24 @@ function GoogleAdsIcon() {
   )
 }
 
+function MetaAdsIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#1877F2" />
+      <path
+        d="M16.5 12.5h-2v6h-2.5v-6h-1.5v-2h1.5v-1.5c0-1.7 1-2.5 2.5-2.5.7 0 1.5.1 1.5.1V8h-1c-.8 0-1 .4-1 1v1.5H16l-.5 2z"
+        fill="white"
+      />
+    </svg>
+  )
+}
+
 export default function IntegrationsPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const queryClient = useQueryClient()
   const [syncing, setSyncing] = useState(false)
+  const [syncingMeta, setSyncingMeta] = useState(false)
   const [creatingTest, setCreatingTest] = useState(false)
   const [mccId, setMccId] = useState('')
   const [loadingDemo, setLoadingDemo] = useState(false)
@@ -41,8 +60,14 @@ export default function IntegrationsPage() {
       toast.success('Google Ads conectado com sucesso!')
       router.replace('/app/integrations')
     }
+    if (connected === 'meta') {
+      toast.success('Meta Ads conectado com sucesso!')
+      router.replace('/app/integrations')
+    }
     if (error === 'oauth_cancelled') toast.error('Conexão cancelada.')
     if (error === 'oauth_failed') toast.error('Erro ao conectar com Google Ads.')
+    if (error === 'meta_cancelled') toast.error('Conexão com Meta Ads cancelada.')
+    if (error === 'meta_failed') toast.error('Erro ao conectar com Meta Ads.')
   }, [searchParams, router])
 
   const { data: status, isLoading } = useQuery<GoogleStatus>({
@@ -54,11 +79,28 @@ export default function IntegrationsPage() {
     },
   })
 
+  const { data: metaStatus, isLoading: metaLoading } = useQuery<MetaStatus>({
+    queryKey: ['meta-ads-status'],
+    queryFn: async () => {
+      const res = await fetch('/api/connect/meta-ads/status')
+      if (!res.ok) return { connected: false }
+      return res.json()
+    },
+  })
+
   const disconnectMutation = useMutation({
     mutationFn: () => fetch('/api/connect/google-ads/disconnect', { method: 'DELETE' }),
     onSuccess: () => {
       toast.success('Google Ads desconectado.')
       queryClient.invalidateQueries({ queryKey: ['google-ads-status'] })
+    },
+  })
+
+  const disconnectMetaMutation = useMutation({
+    mutationFn: () => fetch('/api/connect/meta-ads/disconnect', { method: 'DELETE' }),
+    onSuccess: () => {
+      toast.success('Meta Ads desconectado.')
+      queryClient.invalidateQueries({ queryKey: ['meta-ads-status'] })
     },
   })
 
@@ -96,7 +138,20 @@ export default function IntegrationsPage() {
     }
   }
 
-  const hasDeveloperToken = true // verificado no servidor; assumimos que está configurado se a rota funciona
+  async function handleSyncMeta() {
+    setSyncingMeta(true)
+    try {
+      const res = await fetch('/api/sync/meta-ads', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      toast.success(`Sincronizado! ${data.campaignsSynced} campanhas, ${data.alertsCreated} alertas criados.`)
+      queryClient.invalidateQueries({ queryKey: ['meta-ads-status'] })
+    } catch (err) {
+      toast.error(`Erro na sincronização: ${String(err)}`)
+    } finally {
+      setSyncingMeta(false)
+    }
+  }
 
   async function handleLoadDemo() {
     setLoadingDemo(true)
@@ -224,8 +279,78 @@ export default function IntegrationsPage() {
           </CardContent>
         </Card>
 
-        {/* Meta Ads — em breve */}
-        {(['Meta Ads', 'TikTok Ads', 'LinkedIn Ads'] as const).map((name) => (
+        {/* Meta Ads */}
+        <Card className="border-[var(--color-border)]">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)]" style={{ background: 'var(--color-muted)' }}>
+                  <MetaAdsIcon />
+                </div>
+                <div>
+                  <CardTitle className="text-[length:var(--typography-size-base)]">Meta Ads</CardTitle>
+                  <CardDescription className="text-[length:var(--typography-size-xs)]">
+                    Facebook, Instagram
+                  </CardDescription>
+                </div>
+              </div>
+              {!metaLoading && (
+                <Badge
+                  variant={metaStatus?.connected ? 'default' : 'secondary'}
+                  className="text-[length:var(--typography-size-xs)]"
+                >
+                  {metaStatus?.connected ? 'Conectado' : 'Desconectado'}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {metaStatus?.connected ? (
+              <>
+                <div className="flex items-center gap-2 text-[length:var(--typography-size-xs)] text-[var(--color-muted-foreground)]">
+                  <CheckCircle className="h-3.5 w-3.5" style={{ color: 'var(--color-success)' }} />
+                  Conta: {metaStatus.adAccountId || 'Conectada'}
+                </div>
+                {metaStatus.lastSync && (
+                  <p className="text-[length:var(--typography-size-xs)] text-[var(--color-muted-foreground)]">
+                    Última sync: {new Date(metaStatus.lastSync).toLocaleString('pt-BR')}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1 gap-1.5"
+                    onClick={handleSyncMeta}
+                    disabled={syncingMeta}
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${syncingMeta ? 'animate-spin' : ''}`} />
+                    {syncingMeta ? 'Sincronizando…' : 'Sincronizar'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => disconnectMetaMutation.mutate()}
+                    disabled={disconnectMetaMutation.isPending}
+                  >
+                    <Unlink className="h-3.5 w-3.5" />
+                    Desconectar
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Button size="sm" className="w-full gap-2" asChild>
+                <a href="/api/connect/meta-ads">
+                  <Plug className="h-3.5 w-3.5" />
+                  Conectar Meta Ads
+                </a>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* TikTok Ads — em breve */}
+        {(['TikTok Ads', 'LinkedIn Ads'] as const).map((name) => (
           <Card key={name} className="border-[var(--color-border)] opacity-50">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
