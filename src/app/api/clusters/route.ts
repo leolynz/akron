@@ -8,6 +8,9 @@ const CreateClusterSchema = z.object({
   workspaceId: z.string(),
   nome: z.string().min(1).max(100),
   campanhas: z.array(z.string()),
+  metaRoas: z.number().optional(),
+  metaCpa: z.number().optional(),
+  metaOrcamento: z.number().optional(),
 })
 
 export async function GET(_req: NextRequest) {
@@ -19,7 +22,54 @@ export async function GET(_req: NextRequest) {
     orderBy: { criadoEm: 'desc' },
   })
 
-  return NextResponse.json(clusters)
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+  const enriched = await Promise.all(
+    clusters.map(async (cluster) => {
+      if (cluster.campanhas.length === 0) {
+        return {
+          ...cluster,
+          actualRoas: null,
+          actualCpa: null,
+          totalGasto: null,
+          totalImpressions: null,
+        }
+      }
+
+      const metrics = await prisma.metricsStore.findMany({
+        where: {
+          campanhaId: { in: cluster.campanhas },
+          data: { gte: sevenDaysAgo },
+        },
+      })
+
+      if (metrics.length === 0) {
+        return {
+          ...cluster,
+          actualRoas: null,
+          actualCpa: null,
+          totalGasto: null,
+          totalImpressions: null,
+        }
+      }
+
+      const totalGasto = metrics.reduce((sum, m) => sum + m.gasto, 0)
+      const totalImpressions = metrics.reduce((sum, m) => sum + m.impressoes, 0)
+      const avgRoas = metrics.reduce((sum, m) => sum + m.roas, 0) / metrics.length
+      const avgCpa = metrics.reduce((sum, m) => sum + m.cpa, 0) / metrics.length
+
+      return {
+        ...cluster,
+        actualRoas: avgRoas,
+        actualCpa: avgCpa,
+        totalGasto,
+        totalImpressions,
+      }
+    })
+  )
+
+  return NextResponse.json(enriched)
 }
 
 export async function POST(req: NextRequest) {

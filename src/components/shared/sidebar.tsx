@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Bell, Plug, Users, ScrollText,
-  Settings, Zap, Target, Lightbulb, LayoutList, FileText
+  Settings, Zap, Target, Lightbulb, LayoutList, FileText, Star
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -31,7 +31,8 @@ const navGroups: NavGroup[] = [
       { href: '/app/alerts', label: 'Insights', icon: Bell },
       { href: '/app/otimizacoes', label: 'Otimizações', icon: Lightbulb },
       { href: '/app/visao-unificada', label: 'Visão Unificada', icon: LayoutList },
-      { href: '/app/clusters', label: 'Grupos (Clusters)', icon: Target },
+      { href: '/app/ranking-criativo', label: 'Ranking Criativo', icon: Star },
+      { href: '/app/estrategia', label: 'Estratégia', icon: Target },
       { href: '/app/logs', label: 'Log de Execução', icon: ScrollText },
     ],
   },

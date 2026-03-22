@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { Sidebar } from '@/components/shared/sidebar'
 import { TrialBanner } from '@/components/shared/trial-banner'
 import { DashboardHeader } from '@/components/shared/dashboard-header'
+import { OnboardingModal } from '@/components/shared/onboarding-modal'
 import { isTrialActive, daysLeftInTrial, hasAccess } from '@/lib/subscription'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -12,7 +13,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { plan: true, trialEndsAt: true, stripeCurrentPeriodEnd: true, name: true, image: true },
+    select: { plan: true, trialEndsAt: true, stripeCurrentPeriodEnd: true, name: true, image: true, onboardingCompleted: true },
   })
 
   if (!user) redirect('/login')
@@ -31,6 +32,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {trialActive && <TrialBanner daysLeft={daysLeft} />}
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
+      {!user.onboardingCompleted && (
+        <OnboardingModal userName={user.name} />
+      )}
     </div>
   )
 }
