@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Plasma } from '@/components/ui/plasma'
 import { Bell, Zap, GitBranch, ScrollText, Users, CheckCircle, ArrowRight } from 'lucide-react'
 
 const features = [
@@ -87,30 +88,51 @@ export default function HomePage() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <Badge variant="secondary" className="mb-6">
-          14 dias grátis · Sem cartão de crédito
-        </Badge>
-        <h1 className="mx-auto max-w-4xl text-[length:var(--typography-size-4xl)] font-[var(--typography-weight-bold)] leading-tight sm:text-5xl">
-          Identifique problemas, aplique otimizações e monitore o impacto das suas campanhas —{' '}
-          <span style={{ color: 'var(--color-primary)' }}>tudo em um lugar</span>
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-[length:var(--typography-size-lg)] text-[var(--color-muted-foreground)]">
-          Plataforma de gestão de campanhas multi-canal com detecção automática de problemas, sugestões
-          de otimização com impacto projetado e log auditável de ações para gestores de tráfego e agências.
-        </p>
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/login">
-            <Button size="lg" className="gap-2">
-              Começar 14 dias grátis
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href="#features">
-            <Button size="lg" variant="outline">
-              Ver como funciona
-            </Button>
-          </Link>
+      <section className="relative overflow-hidden" style={{ minHeight: '600px' }}>
+        {/* Plasma background */}
+        <div className="absolute inset-0 z-0">
+          <Plasma
+            color="var(--color-primary)"
+            speed={0.8}
+            opacity={0.6}
+            scale={1.2}
+            mouseInteractive
+          />
+        </div>
+        {/* Radial fade overlay to blend with page bg */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(ellipse 80% 60% at 50% 50%, transparent 0%, var(--color-background) 75%)',
+          }}
+        />
+        {/* Content */}
+        <div className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 text-center">
+          <Badge variant="secondary" className="mb-6">
+            14 dias grátis · Sem cartão de crédito
+          </Badge>
+          <h1 className="mx-auto max-w-4xl text-[length:var(--typography-size-4xl)] font-[var(--typography-weight-bold)] leading-tight sm:text-5xl">
+            Identifique problemas, aplique otimizações e monitore o impacto das suas campanhas —{' '}
+            <span style={{ color: 'var(--color-primary)' }}>tudo em um lugar</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-[length:var(--typography-size-lg)] text-[var(--color-muted-foreground)]">
+            Plataforma de gestão de campanhas multi-canal com detecção automática de problemas, sugestões
+            de otimização com impacto projetado e log auditável de ações para gestores de tráfego e agências.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/login">
+              <Button size="lg" className="gap-2">
+                Começar 14 dias grátis
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="#features">
+              <Button size="lg" variant="outline">
+                Ver como funciona
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 

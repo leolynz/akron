@@ -78,27 +78,27 @@ export interface DesignTokens {
 
 export const tokens: DesignTokens = {
   colors: {
-    // Primary — azul dados/performance
-    primary: '#1D4ED8',
+    // Primary — indigo/violeta do logo
+    primary: '#6366F1',
     primaryForeground: '#FFFFFF',
-    primaryHover: '#1e40af',
-    // Accent — verde performance positiva/otimização
-    accent: '#10B981',
+    primaryHover: '#4F46E5',
+    // Accent — indigo claro
+    accent: '#818CF8',
     accentForeground: '#FFFFFF',
-    accentHover: '#059669',
-    // Backgrounds
-    background: '#F9FAFB',
-    foreground: '#111827',
-    card: '#FFFFFF',
-    cardForeground: '#111827',
-    popover: '#FFFFFF',
-    popoverForeground: '#111827',
+    accentHover: '#6366F1',
+    // Backgrounds — dark navy
+    background: '#080C1A',
+    foreground: '#F1F5F9',
+    card: '#0F1629',
+    cardForeground: '#F1F5F9',
+    popover: '#0F1629',
+    popoverForeground: '#F1F5F9',
     // Neutral
-    muted: '#F3F4F6',
-    mutedForeground: '#6B7280',
-    border: '#E5E7EB',
-    input: '#E5E7EB',
-    ring: '#1D4ED8',
+    muted: '#1A2035',
+    mutedForeground: '#94A3B8',
+    border: '#1E2745',
+    input: '#1E2745',
+    ring: '#6366F1',
     // Semantic
     destructive: '#EF4444',
     destructiveForeground: '#FFFFFF',
@@ -109,13 +109,13 @@ export const tokens: DesignTokens = {
     // Alert severity
     severityHigh: '#EF4444',
     severityMedium: '#F59E0B',
-    severityLow: '#6B7280',
+    severityLow: '#94A3B8',
   },
   sidebar: {
-    background: '#1E293B',
-    foreground: '#F1F5F9',
-    border: '#334155',
-    accent: '#1D4ED8',
+    background: '#050810',
+    foreground: '#E2E8F0',
+    border: '#1E2745',
+    accent: '#6366F1',
     accentForeground: '#FFFFFF',
     width: '16rem',
   },
