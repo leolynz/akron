@@ -20,8 +20,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/login',
     error: '/login',
   },
+  session: {
+    strategy: 'database',
+  },
   events: {
     async createUser({ user }) {
+      if (!user.id) return
       // Primeiro login → TRIAL por 14 dias
       await prisma.user.update({
         where: { id: user.id },
@@ -34,23 +38,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id
-        // Attach plan info to session
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { plan: true, trialEndsAt: true, stripeCurrentPeriodEnd: true },
+      // Com database adapter, `user` é o registro do banco — sempre presente
+      session.user.id = user.id
+
+      // Anexa plan/trialEndsAt à sessão para uso no client
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { plan: true, trialEndsAt: true },
+      })
+
+      if (dbUser) {
+        Object.assign(session.user, {
+          plan: dbUser.plan,
+          trialEndsAt: dbUser.trialEndsAt,
         })
-        if (dbUser) {
-          ;(session.user as typeof session.user & { plan: string; trialEndsAt: Date | null }).plan =
-            dbUser.plan
-          ;(
-            session.user as typeof session.user & {
-              trialEndsAt: Date | null
-            }
-          ).trialEndsAt = dbUser.trialEndsAt
-        }
       }
+
       return session
     },
   },
